@@ -11,19 +11,23 @@ export class EditorialService {
   ) {}
 
   async create(createEditorialDto: CreateEditorialDto): Promise<Editorial> {
-    return await this.editorialRepository.create<Editorial>({
+    const editorial = await this.editorialRepository.create<Editorial>({
       ...createEditorialDto,
     });
+
+    return await this.findOne(editorial.Id);
   }
 
   async findAll(): Promise<Editorial[]> {
     return await this.editorialRepository.findAll<Editorial>({
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
 
   async findOne(id: number): Promise<Editorial> {
     return await this.editorialRepository.findByPk(id, {
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
@@ -32,22 +36,22 @@ export class EditorialService {
     id: number,
     updateEditorialDto: UpdateEditorialDto,
   ): Promise<Editorial> {
-    const updatedEditorial = await this.findOne(id);
+    const editorial = await this.findOne(id);
 
-    if (updatedEditorial) {
-      await updatedEditorial.update(updateEditorialDto);
+    if (editorial) {
+      await editorial.update(updateEditorialDto);
+
+      return await this.findOne(id);
     }
-
-    return await this.findOne(id);
   }
 
   async remove(id: number): Promise<Editorial> {
-    const deletedEditorial = await this.findOne(id);
+    const editorial = await this.findOne(id);
 
-    if (deletedEditorial) {
-      await deletedEditorial.destroy();
+    if (editorial) {
+      await editorial.destroy();
+
+      return editorial;
     }
-
-    return deletedEditorial;
   }
 }

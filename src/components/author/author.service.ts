@@ -11,17 +11,23 @@ export class AuthorService {
   ) {}
 
   async create(createAuthorDto: CreateAuthorDto): Promise<Author> {
-    return await this.authorRepository.create<Author>({ ...createAuthorDto });
+    const author = await this.authorRepository.create<Author>({
+      ...createAuthorDto,
+    });
+
+    return await this.findOne(author.Id);
   }
 
   async findAll(): Promise<Author[]> {
     return await this.authorRepository.findAll<Author>({
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
 
   async findOne(id: number): Promise<Author> {
     return await this.authorRepository.findByPk<Author>(id, {
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }

@@ -11,19 +11,23 @@ export class CategoryService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    return await this.categoryRepository.create<Category>({
+    const category = await this.categoryRepository.create<Category>({
       ...createCategoryDto,
     });
+
+    return await this.findOne(category.Id);
   }
 
   async findAll(): Promise<Category[]> {
     return await this.categoryRepository.findAll<Category>({
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
 
   async findOne(id: number): Promise<Category> {
     return await this.categoryRepository.findByPk(id, {
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
@@ -42,12 +46,12 @@ export class CategoryService {
   }
 
   async remove(id: number): Promise<Category> {
-    const deletedCategory = await this.findOne(id);
+    const category = await this.findOne(id);
 
-    if (deletedCategory) {
-      await deletedCategory.destroy();
+    if (category) {
+      await category.destroy();
     }
 
-    return deletedCategory;
+    return category;
   }
 }

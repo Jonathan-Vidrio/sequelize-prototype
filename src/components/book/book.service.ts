@@ -11,17 +11,37 @@ export class BookService {
   ) {}
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
-    return await this.bookRepository.create<Book>({ ...createBookDto });
+    const book = await this.bookRepository.create<Book>({ ...createBookDto });
+
+    return await this.findOne(book.Id);
   }
 
   async findAll(): Promise<Book[]> {
     return await this.bookRepository.findAll<Book>({
+      attributes: {
+        exclude: [
+          'AuthorId',
+          'CategoryId',
+          'EditorialId',
+          'LanguageId',
+          'StatusId',
+        ],
+      },
       include: [{ all: true }],
     });
   }
 
   async findOne(id: number): Promise<Book> {
     return await this.bookRepository.findByPk<Book>(id, {
+      attributes: {
+        exclude: [
+          'AuthorId',
+          'CategoryId',
+          'EditorialId',
+          'LanguageId',
+          'StatusId',
+        ],
+      },
       include: [{ all: true }],
     });
   }

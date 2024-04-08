@@ -11,19 +11,23 @@ export class LanguageService {
   ) {}
 
   async create(createLanguageDto: CreateLanguageDto): Promise<Language> {
-    return await this.languageRepository.create<Language>({
+    await this.languageRepository.create<Language>({
       ...createLanguageDto,
     });
+
+    return await this.findOne(createLanguageDto.Id);
   }
 
   async findAll(): Promise<Language[]> {
     return await this.languageRepository.findAll<Language>({
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
 
   async findOne(id: number): Promise<Language> {
-    return await this.languageRepository.findByPk(id, {
+    return this.languageRepository.findByPk(id, {
+      attributes: { exclude: ['StatusId'] },
       include: [{ all: true }],
     });
   }
@@ -32,22 +36,22 @@ export class LanguageService {
     id: number,
     updateLanguageDto: UpdateLanguageDto,
   ): Promise<Language> {
-    const updatedLanguage = await this.findOne(id);
+    const language = await this.findOne(id);
 
-    if (updatedLanguage) {
-      await updatedLanguage.update(updateLanguageDto);
+    if (language) {
+      await language.update(updateLanguageDto);
+
+      return await this.findOne(id);
     }
-
-    return await this.findOne(id);
   }
 
   async remove(id: number): Promise<Language> {
-    const deletedLanguage = await this.findOne(id);
+    const language = await this.findOne(id);
 
-    if (deletedLanguage) {
-      await deletedLanguage.destroy();
+    if (language) {
+      await language.destroy();
+
+      return language;
     }
-
-    return deletedLanguage;
   }
 }
