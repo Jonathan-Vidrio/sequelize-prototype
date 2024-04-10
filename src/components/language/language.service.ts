@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateLanguageDto } from './dto/create-language.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { Language } from './entities/language.entity';
+import { Book } from '../book/entities/book.entity';
 
 @Injectable()
 export class LanguageService {
@@ -11,24 +12,20 @@ export class LanguageService {
   ) {}
 
   async create(createLanguageDto: CreateLanguageDto): Promise<Language> {
-    await this.languageRepository.create<Language>({
+    return await this.languageRepository.create({
       ...createLanguageDto,
     });
-
-    return await this.findOne(createLanguageDto.Id);
   }
 
   async findAll(): Promise<Language[]> {
-    return await this.languageRepository.findAll<Language>({
-      attributes: { exclude: ['StatusId'] },
-      include: [{ all: true }],
+    return await this.languageRepository.findAll({
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
   async findOne(id: number): Promise<Language> {
     return this.languageRepository.findByPk(id, {
-      attributes: { exclude: ['StatusId'] },
-      include: [{ all: true }],
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
@@ -36,17 +33,17 @@ export class LanguageService {
     id: number,
     updateLanguageDto: UpdateLanguageDto,
   ): Promise<Language> {
-    const language = await this.findOne(id);
+    const language = await this.languageRepository.findByPk(id);
 
     if (language) {
       await language.update(updateLanguageDto);
 
-      return await this.findOne(id);
+      return language;
     }
   }
 
   async remove(id: number): Promise<Language> {
-    const language = await this.findOne(id);
+    const language = await this.languageRepository.findByPk(id);
 
     if (language) {
       await language.destroy();

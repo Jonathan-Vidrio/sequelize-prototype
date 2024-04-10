@@ -2,6 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entities/book.entity';
+import { Author } from '../author/entities/author.entity';
+import { Category } from '../category/entities/category.entity';
+import { Editorial } from '../editorial/entities/editorial.entity';
+import { Language } from '../language/entities/language.entity';
+import { Status } from '../status/entities/status.entity';
 
 @Injectable()
 export class BookService {
@@ -11,58 +16,50 @@ export class BookService {
   ) {}
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
-    const book = await this.bookRepository.create<Book>({ ...createBookDto });
-
-    return await this.findOne(book.Id);
+    return await this.bookRepository.create({ ...createBookDto });
   }
 
   async findAll(): Promise<Book[]> {
-    return await this.bookRepository.findAll<Book>({
-      attributes: {
-        exclude: [
-          'AuthorId',
-          'CategoryId',
-          'EditorialId',
-          'LanguageId',
-          'StatusId',
-        ],
-      },
-      include: [{ all: true }],
+    return await this.bookRepository.findAll({
+      include: [
+        { model: Author, as: 'Author' },
+        { model: Category, as: 'Category' },
+        { model: Editorial, as: 'Editorial' },
+        { model: Language, as: 'Language' },
+        { model: Status, as: 'Status' },
+      ],
     });
   }
 
   async findOne(id: number): Promise<Book> {
-    return await this.bookRepository.findByPk<Book>(id, {
-      attributes: {
-        exclude: [
-          'AuthorId',
-          'CategoryId',
-          'EditorialId',
-          'LanguageId',
-          'StatusId',
-        ],
-      },
-      include: [{ all: true }],
+    return await this.bookRepository.findByPk(id, {
+      include: [
+        { model: Author, as: 'Authors' },
+        { model: Category, as: 'Categories' },
+        { model: Editorial, as: 'Editorials' },
+        { model: Language, as: 'Languages' },
+        { model: Status, as: 'Statuses' },
+      ],
     });
   }
 
   async update(id: number, updateBookDto: UpdateBookDto): Promise<Book> {
-    const updatedBook = await this.findOne(id);
+    const updatedBook = await this.bookRepository.findByPk(id);
 
     if (updatedBook) {
       await updatedBook.update({ ...updateBookDto });
-    }
 
-    return await this.findOne(id);
+      return updatedBook;
+    }
   }
 
   async remove(id: number): Promise<Book> {
-    const deletedBook = await this.findOne(id);
+    const deletedBook = await this.bookRepository.findByPk(id);
 
     if (deletedBook) {
       await deletedBook.destroy();
-    }
 
-    return deletedBook;
+      return deletedBook;
+    }
   }
 }

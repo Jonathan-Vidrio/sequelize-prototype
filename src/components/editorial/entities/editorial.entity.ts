@@ -3,11 +3,13 @@ import {
   BelongsTo,
   Column,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
 import { Status } from '../../status/entities/status.entity';
+import { Book } from '../../book/entities/book.entity';
 
 @Table({ tableName: 'Editorials' })
 export class Editorial extends Model {
@@ -37,4 +39,7 @@ export class Editorial extends Model {
 
   @BelongsTo(() => Status)
   Status: Status;
+
+  @HasMany(() => Book)
+  Books: Book[];
 }

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
+import { Book } from '../book/entities/book.entity';
 
 @Injectable()
 export class CategoryService {
@@ -11,24 +12,20 @@ export class CategoryService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = await this.categoryRepository.create<Category>({
+    return await this.categoryRepository.create({
       ...createCategoryDto,
     });
-
-    return await this.findOne(category.Id);
   }
 
   async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.findAll<Category>({
-      attributes: { exclude: ['StatusId'] },
-      include: [{ all: true }],
+    return await this.categoryRepository.findAll({
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
   async findOne(id: number): Promise<Category> {
     return await this.categoryRepository.findByPk(id, {
-      attributes: { exclude: ['StatusId'] },
-      include: [{ all: true }],
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
@@ -36,22 +33,22 @@ export class CategoryService {
     id: number,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    const category = await this.findOne(id);
+    const category = await this.categoryRepository.findByPk(id);
 
     if (category) {
       await category.update(updateCategoryDto);
-    }
 
-    return await this.findOne(id);
+      return category;
+    }
   }
 
   async remove(id: number): Promise<Category> {
-    const category = await this.findOne(id);
+    const category = await this.categoryRepository.findByPk(id);
 
     if (category) {
       await category.destroy();
-    }
 
-    return category;
+      return category;
+    }
   }
 }

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { Author } from './entities/author.entity';
+import { Book } from '../book/entities/book.entity';
 
 @Injectable()
 export class AuthorService {
@@ -11,43 +12,40 @@ export class AuthorService {
   ) {}
 
   async create(createAuthorDto: CreateAuthorDto): Promise<Author> {
-    const author = await this.authorRepository.create<Author>({
+    return await this.authorRepository.create({
       ...createAuthorDto,
     });
-
-    return await this.findOne(author.Id);
   }
 
   async findAll(): Promise<Author[]> {
-    return await this.authorRepository.findAll<Author>({
-      attributes: { exclude: ['StatusId'] },
-      include: [{ all: true }],
+    return await this.authorRepository.findAll({
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
   async findOne(id: number): Promise<Author> {
-    return await this.authorRepository.findByPk<Author>(id, {
-      attributes: { exclude: ['StatusId'] },
-      include: [{ all: true }],
+    return await this.authorRepository.findByPk(id, {
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
   async update(id: number, updateAuthorDto: UpdateAuthorDto): Promise<Author> {
-    const updatedAuthor = await this.findOne(id);
+    const author = await this.authorRepository.findByPk(id);
 
-    if (updatedAuthor) {
-      await updatedAuthor.update({ ...updateAuthorDto });
+    if (author) {
+      await author.update({ ...updateAuthorDto });
+
+      return author;
     }
-
-    return await this.findOne(id);
   }
+
   async remove(id: number): Promise<Author> {
-    const deletedAuthor = await this.findOne(id);
+    const author = await this.authorRepository.findByPk(id);
 
-    if (deletedAuthor) {
-      await deletedAuthor.destroy();
+    if (author) {
+      await author.destroy();
+
+      return author;
     }
-
-    return deletedAuthor;
   }
 }

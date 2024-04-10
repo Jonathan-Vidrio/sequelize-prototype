@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { Status } from './entities/status.entity';
+import { Book } from '../book/entities/book.entity';
 
 @Injectable()
 export class StatusService {
@@ -11,36 +12,38 @@ export class StatusService {
   ) {}
 
   async create(createStatusDto: CreateStatusDto): Promise<Status> {
-    return await this.statusRepository.create<Status>({ ...createStatusDto });
+    return await this.statusRepository.create({ ...createStatusDto });
   }
 
   async findAll(): Promise<Status[]> {
-    return await this.statusRepository.findAll<Status>();
+    return await this.statusRepository.findAll({
+      include: [{ model: Book, as: 'Books' }],
+    });
   }
 
   async findOne(id: number): Promise<Status> {
-    return await this.statusRepository.findByPk<Status>(id, {
-      include: [{ all: true }],
+    return await this.statusRepository.findByPk(id, {
+      include: [{ model: Book, as: 'Books' }],
     });
   }
 
   async update(id: number, updateStatusDto: UpdateStatusDto): Promise<Status> {
-    const updatedStatus = await this.findOne(id);
+    const status = await this.statusRepository.findByPk(id);
 
-    if (updatedStatus) {
-      await updatedStatus.update({ ...updateStatusDto });
+    if (status) {
+      await status.update({ ...updateStatusDto });
+
+      return status;
     }
-
-    return await this.findOne(id);
   }
 
   async remove(id: number): Promise<Status> {
-    const deletedStatus = await this.findOne(id);
+    const status = await this.statusRepository.findByPk(id);
 
-    if (deletedStatus) {
-      await deletedStatus.destroy();
+    if (status) {
+      await status.destroy();
+
+      return status;
     }
-
-    return deletedStatus;
   }
 }
