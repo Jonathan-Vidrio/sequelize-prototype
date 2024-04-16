@@ -34,11 +34,11 @@ export class BookService {
   async findOne(id: number): Promise<Book> {
     return await this.bookRepository.findByPk(id, {
       include: [
-        { model: Author, as: 'Authors' },
-        { model: Category, as: 'Categories' },
-        { model: Editorial, as: 'Editorials' },
-        { model: Language, as: 'Languages' },
-        { model: Status, as: 'Statuses' },
+        { model: Author, as: 'Author' },
+        { model: Category, as: 'Category' },
+        { model: Editorial, as: 'Editorial' },
+        { model: Language, as: 'Language' },
+        { model: Status, as: 'Status' },
       ],
     });
   }
